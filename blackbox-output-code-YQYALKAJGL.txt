@@ -1,0 +1,11 @@
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+
+const SECRET = process.env.JWT_SECRET || 'dev-secret';
+
+export const hashPassword = (p) => bcrypt.hash(p, 10);
+export const comparePassword = (p, h) => bcrypt.compare(p, h);
+export const signToken = (payload) => jwt.sign(payload, SECRET, { expiresIn: '7d' });
+export const verifyToken = (token) => {
+  try { return jwt.verify(token, SECRET); } catch { return null; }
+};

@@ -1,0 +1,33 @@
+const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
+const prisma = new PrismaClient();
+
+async function main() {
+  const hashed = await bcrypt.hash('password123', 10);
+  const user = await prisma.user.upsert({
+    where: { email: 'demo@store.vn' },
+    update: {},
+    create: {
+      email: 'demo@store.vn',
+      password: hashed,
+      store: {
+        create: {
+          name: 'Tạp Hóa Demo',
+          products: {
+            create: [
+              { name: 'Mì Hảo Hảo', price: 4000, cost: 3000, stock: 100, barcode: '8934563138127' },
+              { name: 'Coca Cola 330ml', price: 10000, cost: 7500, stock: 50, barcode: '8934673201018' },
+              { name: 'Bánh Oreo', price: 15000, cost: 11000, stock: 30, barcode: '8801231111111' },
+              { name: 'Nước suối Lavie 500ml', price: 6000, cost: 4000, stock: 80, barcode: '8935049500001' },
+              { name: 'Sữa TH True Milk', price: 9000, cost: 7000, stock: 40, barcode: '8936079120001' },
+              { name: 'Kẹo Mentos', price: 7000, cost: 5000, stock: 3, barcode: '8936036022001' },
+            ]
+          }
+        }
+      }
+    }
+  });
+  console.log('✅ Seeded user:', user.email, '(password: password123)');
+}
+
+main().finally(() => prisma.$disconnect());

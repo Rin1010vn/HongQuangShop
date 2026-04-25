@@ -1,0 +1,16 @@
+import { verifyToken } from './auth';
+import { prisma } from './prisma';
+
+export async function authenticate(req, res) {
+  const auth = req.headers.authorization;
+  const token = auth?.startsWith('Bearer ') ? auth.slice(7) : null;
+  if (!token) { res.status(401).json({ error: 'Unauthorized' }); return null; }
+
+  const payload = verifyToken(token);
+  if (!payload) { res.status(401).json({ error: 'Invalid token' }); return null; }
+
+  const store = await prisma.store.findUnique({ where: { userId: payload.userId } });
+  if (!store) { res.status(403).json({ error: 'No store' }); return null; }
+
+  return { userId: payload.userId, storeId: store.id };
+}

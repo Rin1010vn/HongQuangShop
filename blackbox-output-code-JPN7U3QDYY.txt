@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  store     Store?
+}
+
+model Store {
+  id        Int       @id @default(autoincrement())
+  name      String
+  userId    Int       @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products  Product[]
+  orders    Order[]
+  createdAt DateTime  @default(now())
+}
+
+model Product {
+  id         Int         @id @default(autoincrement())
+  storeId    Int
+  store      Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name       String
+  price      Float
+  cost       Float       @default(0)
+  stock      Int         @default(0)
+  threshold  Int         @default(5)
+  barcode    String?
+  createdAt  DateTime    @default(now())
+  orderItems OrderItem[]
+
+  @@index([storeId])
+  @@index([barcode])
+}
+
+model Order {
+  id         Int         @id @default(autoincrement())
+  storeId    Int
+  store      Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  totalPrice Float
+  cashGiven  Float       @default(0)
+  change     Float       @default(0)
+  createdAt  DateTime    @default(now())
+  items      OrderItem[]
+
+  @@index([storeId, createdAt])
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+}
